@@ -13,7 +13,7 @@ A simple web application that sends verification codes via email and allows user
    ```bash
    npm start
    ```
-4. Open your browser and navigate to `http://localhost:3000`
+4. Open your browser and navigate to `http://localhost:5137`
 
 ## Features
 

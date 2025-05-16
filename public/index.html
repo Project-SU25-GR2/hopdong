@@ -179,7 +179,7 @@
             }
             
             try {
-                const response = await fetch('http://localhost:3000/send-code', {
+                const response = await fetch('http://localhost:5137/send-code', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -258,7 +258,7 @@
                 formData.append('email', email);
 
                 try {
-                    const response = await fetch('http://localhost:3000/send-pdf', {
+                    const response = await fetch('http://localhost:5137/send-pdf', {
                         method: 'POST',
                         body: formData
                     });
@@ -287,7 +287,7 @@
             }
             
             try {
-                const response = await fetch('http://localhost:3000/verify-code', {
+                const response = await fetch('http://localhost:5137/verify-code', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
