@@ -70,13 +70,18 @@
         </div>
 
         <button id="getCodeBtn" onclick="sendVerificationCode()" disabled>Gửi mã xác nhận</button>
+        <span id="countdown" style="color: #666;">2:00</span>
         
         <div class="form-group" style="margin-top: 20px;">
             <label for="code">Mã xác nhận:</label>
-            <input type="text" id="code" placeholder="Nhập mã xác nhận">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <input type="text" id="code" placeholder="Nhập mã xác nhận">
+                
+                <button id="resendCodeBtn" onclick="resendVerificationCode()" style="display: none;">Gửi lại mã</button>
+            </div>
         </div>
         
-        <button onclick="verifyCode()">Xác nhận</button>
+        <button id="verifyBtn" onclick="verifyCode()">Xác nhận</button>
         
         <div id="message"></div>
 

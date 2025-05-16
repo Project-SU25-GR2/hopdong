@@ -1,3 +1,8 @@
+const BASE_URL = 'https://binhvuong.id.vn';
+// const BASE_URL = 'http://localhost:5137';
+// const BASE_URL = 'http://192.168.1.127:5137';
+
+
 function toggleVerificationButton() {
     const termsCheckbox = document.getElementById('terms');
     const getCodeBtn = document.getElementById('getCodeBtn');
@@ -22,6 +27,34 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('currentDate').textContent = getDate();
 });
 
+let countdownInterval;
+let timeLeft = 120; // 120 seconds = 2 minutes
+
+function startCountdown() {
+    const countdownElement = document.getElementById('countdown');
+    const resendButton = document.getElementById('resendCodeBtn');
+    const getCodeBtn = document.getElementById('getCodeBtn');
+    
+    // Disable both buttons initially
+    resendButton.disabled = true;
+    getCodeBtn.disabled = true;
+    
+    countdownInterval = setInterval(() => {
+        const minutes = Math.floor(timeLeft / 60);
+        const seconds = timeLeft % 60;
+        countdownElement.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+        
+        if (timeLeft <= 0) {
+            clearInterval(countdownInterval);
+            countdownElement.textContent = 'Hết hạn';
+            resendButton.disabled = false;
+            getCodeBtn.disabled = false;
+        } else {
+            timeLeft--;
+        }
+    }, 1000);
+}
+
 async function sendVerificationCode() {
     const email = document.getElementById('email').value;
     
@@ -36,7 +69,7 @@ async function sendVerificationCode() {
     }
     
     try {
-        const response = await fetch('https://binhvuong.id.vn/send-code', {
+        const response = await fetch(`${BASE_URL}/send-code`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -48,6 +81,55 @@ async function sendVerificationCode() {
         
         if (data.toast) {
             toast(data.toast);
+        }
+        
+        if (data.success) {
+            // Reset and start countdown
+            timeLeft = 120;
+            startCountdown();
+        }
+    } catch (error) {
+        toast({
+            title: 'Error',
+            message: 'Đã xảy ra lỗi. Vui lòng thử lại.',
+            type: 'error',
+            duration: 5000
+        });
+    }
+}
+
+async function resendVerificationCode() {
+    const email = document.getElementById('email').value;
+    
+    if (!email) {
+        toast({
+            title: 'Error',
+            message: 'Vui lòng nhập email',
+            type: 'error',
+            duration: 5000
+        });
+        return;
+    }
+    
+    try {
+        const response = await fetch(`${BASE_URL}/resend-code`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ email })
+        });
+        
+        const data = await response.json();
+        
+        if (data.toast) {
+            toast(data.toast);
+        }
+        
+        if (data.success) {
+            // Reset and start countdown
+            timeLeft = 120;
+            startCountdown();
         }
     } catch (error) {
         toast({
@@ -72,7 +154,7 @@ async function generateAndSendPDF() {
             { text: '-------------------------------', alignment: 'center', margin: [0, 0, 0, 10] },
             { text: 'HỢP ĐỒNG CHO THUÊ XE', style: 'title', alignment: 'center', margin: [0, 10, 0, 0] },
             { text: `Ngày: ${getDate()}`, alignment: 'center' },
-            { text: 'Số: …………………………', alignment: 'center', margin: [0, 0, 0, 20] },
+            { text: `Số HĐ: ${generateContractCode()}`, alignment: 'center', margin: [0, 0, 0, 20] },
 
             { text: 'BÊN A', style: 'section' },
             { text: `Tên: ${name}` },
@@ -119,7 +201,7 @@ async function generateAndSendPDF() {
         formData.append('email', email);
 
         try {
-            const response = await fetch('https://binhvuong.id.vn/send-pdf', {
+            const response = await fetch(`${BASE_URL}/send-pdf`, {
                 method: 'POST',
                 body: formData
             });
@@ -142,6 +224,7 @@ async function verifyCode() {
     const email = document.getElementById('email').value;
     const code = document.getElementById('code').value;
     const name = document.getElementById('name').value;
+    const verifyButton = document.getElementById('verifyBtn');
     
     if (!email || !code) {
         toast({
@@ -154,7 +237,7 @@ async function verifyCode() {
     }
     
     try {
-        const response = await fetch('https://binhvuong.id.vn/verify-code', {
+        const response = await fetch(`${BASE_URL}/verify-code`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -169,6 +252,14 @@ async function verifyCode() {
         }
 
         if (data.success) {
+            // Stop the countdown
+            clearInterval(countdownInterval);
+            document.getElementById('countdown').textContent = 'Đã xác nhận';
+            
+            // Change button color to blue
+            verifyButton.style.backgroundColor = '#4CAF50';
+            verifyButton.disabled = true;
+            
             document.getElementById('signedName').textContent = name;
             document.getElementById('verificationStatus').textContent = 'Đã xác nhận';
             await generateAndSendPDF();

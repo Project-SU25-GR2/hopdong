@@ -36,7 +36,7 @@ input {
     box-sizing: border-box;
 }
 button {
-    background-color: #4CAF50;
+    background-color: #007bff;
     color: white;
     padding: 10px 15px;
     border: none;
@@ -49,7 +49,7 @@ button:disabled {
     cursor: not-allowed;
 }
 button:hover:not(:disabled) {
-    background-color: #45a049;
+    background-color: #0056b3;
 }
 .message {
     margin-top: 10px;
@@ -84,4 +84,24 @@ button:hover:not(:disabled) {
 }
 .party-section {
     width: 45%;
+}
+#countdown {
+    font-family: monospace;
+    font-size: 1.1em;
+    min-width: 50px;
+    text-align: center;
+}
+
+#resendCodeBtn {
+    background-color: #2196F3;
+    white-space: nowrap;
+}
+
+#resendCodeBtn:hover:not(:disabled) {
+    background-color: #1976D2;
+}
+
+#resendCodeBtn:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
 }

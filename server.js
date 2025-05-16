@@ -13,6 +13,9 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static('public'));
 
+//countdown
+
+
 // Store verification codes (in a real app, use a database)
 const verificationCodes = new Map();
 
@@ -91,8 +94,8 @@ app.post('/verify-code', (req, res) => {
         });
     }
 
-    // Check if code is expired (5 minutes)
-    if (Date.now() - storedData.timestamp > 5 * 60 * 1000) {
+    // Check if code is expired (120 seconds)
+    if (Date.now() - storedData.timestamp > 120 * 1000) {
         verificationCodes.delete(email);
         return res.json({ 
             success: false, 
@@ -127,6 +130,50 @@ app.post('/verify-code', (req, res) => {
             duration: 5000
         }
     });
+});
+
+// Resend verification code endpoint
+app.post('/resend-code', async (req, res) => {
+    const { email } = req.body;
+    const code = generateVerificationCode();
+    
+    // Store the code
+    verificationCodes.set(email, {
+        code,
+        timestamp: Date.now()
+    });
+
+    // Email options
+    const mailOptions = {
+        from: process.env.EMAIL_USER,
+        to: email,
+        subject: 'Mã xác nhận hợp đồng',
+        text: `Mã xác nhận mới của bạn là: ${code}`
+    };
+
+    try {
+        await transporter.sendMail(mailOptions);
+        res.json({ 
+            success: true, 
+            toast: {
+                title: 'Success',
+                message: 'Mã xác nhận mới đã được gửi đến email của bạn',
+                type: 'success',
+                duration: 5000
+            }
+        });
+    } catch (error) {
+        console.error('Error sending email:', error);
+        res.status(500).json({ 
+            success: false, 
+            toast: {
+                title: 'Error',
+                message: 'Không thể gửi mã xác nhận',
+                type: 'error',
+                duration: 5000
+            }
+        });
+    }
 });
 
 // API gửi PDF qua email
