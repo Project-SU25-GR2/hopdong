@@ -1,6 +1,6 @@
-const BASE_URL = 'https://binhvuong.id.vn';
+// const BASE_URL = 'https://binhvuong.id.vn';
 // const BASE_URL = 'http://localhost:5137';
-// const BASE_URL = 'http://192.168.1.127:5137';
+const BASE_URL = 'http://192.168.1.127:5137';
 
 
 function toggleVerificationButton() {
