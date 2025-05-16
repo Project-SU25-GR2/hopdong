@@ -104,8 +104,7 @@ app.post('/send-pdf', upload.single('pdf'), async (req, res) => {
         res.status(500).json({ success: false, message: 'Không thể gửi hợp đồng qua email' });
     }
 });
-
 const PORT = process.env.PORT || 5137;
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
     console.log(`Server is running on port ${PORT}`);
 }); 
