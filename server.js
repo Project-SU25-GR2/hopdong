@@ -51,10 +51,26 @@ app.post('/send-code', async (req, res) => {
 
     try {
         await transporter.sendMail(mailOptions);
-        res.json({ success: true, message: 'Mã xác nhận đã được gửi đến email của bạn' });
+        res.json({ 
+            success: true, 
+            toast: {
+                title: 'Success',
+                message: 'Mã xác nhận đã được gửi đến email của bạn',
+                type: 'success',
+                duration: 5000
+            }
+        });
     } catch (error) {
         console.error('Error sending email:', error);
-        res.status(500).json({ success: false, message: 'Không thể gửi mã xác nhận' });
+        res.status(500).json({ 
+            success: false, 
+            toast: {
+                title: 'Error',
+                message: 'Không thể gửi mã xác nhận',
+                type: 'error',
+                duration: 5000
+            }
+        });
     }
 });
 
@@ -64,21 +80,53 @@ app.post('/verify-code', (req, res) => {
     const storedData = verificationCodes.get(email);
 
     if (!storedData) {
-        return res.json({ success: false, message: 'No verification code found for this email' });
+        return res.json({ 
+            success: false, 
+            toast: {
+                title: 'Error',
+                message: 'Không tìm thấy mã xác nhận cho email này',
+                type: 'error',
+                duration: 5000
+            }
+        });
     }
 
     // Check if code is expired (5 minutes)
     if (Date.now() - storedData.timestamp > 5 * 60 * 1000) {
         verificationCodes.delete(email);
-        return res.json({ success: false, message: 'Verification code has expired' });
+        return res.json({ 
+            success: false, 
+            toast: {
+                title: 'Error',
+                message: 'Mã xác nhận đã hết hạn',
+                type: 'error',
+                duration: 5000
+            }
+        });
     }
 
     if (storedData.code === code) {
         verificationCodes.delete(email);
-        return res.json({ success: true, message: 'Xác nhận thành công' });
+        return res.json({ 
+            success: true, 
+            toast: {
+                title: 'Success',
+                message: 'Xác nhận thành công',
+                type: 'success',
+                duration: 5000
+            }
+        });
     }
 
-    res.json({ success: false, message: 'Mã xác nhận không đúng' });
+    res.json({ 
+        success: false, 
+        toast: {
+            title: 'Error',
+            message: 'Mã xác nhận không đúng',
+            type: 'error',
+            duration: 5000
+        }
+    });
 });
 
 // API gửi PDF qua email
@@ -98,10 +146,26 @@ app.post('/send-pdf', upload.single('pdf'), async (req, res) => {
             }]
         });
 
-        res.json({ success: true, message: 'Hợp đồng đã được gửi đến email của bạn' });
+        res.json({ 
+            success: true, 
+            toast: {
+                title: 'Success',
+                message: 'Hợp đồng đã được gửi đến email của bạn',
+                type: 'success',
+                duration: 5000
+            }
+        });
     } catch (error) {
         console.error('Error sending PDF:', error);
-        res.status(500).json({ success: false, message: 'Không thể gửi hợp đồng qua email' });
+        res.status(500).json({ 
+            success: false, 
+            toast: {
+                title: 'Error',
+                message: 'Không thể gửi hợp đồng qua email',
+                type: 'error',
+                duration: 5000
+            }
+        });
     }
 });
 const PORT = process.env.PORT || 5137;

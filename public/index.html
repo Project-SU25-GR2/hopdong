@@ -9,87 +9,20 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/roboto-font/0.1.0/fonts/Roboto-Regular.ttf"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-            background-color: #f5f5f5;
-        }
-        .container {
-            background-color: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        .contract-header {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-        .contract-title {
-            text-align: center;
-            font-weight: bold;
-            margin: 20px 0;
-        }
-        .form-group {
-            margin-bottom: 15px;
-        }
-        label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-        }
-        input {
-            width: 100%;
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            box-sizing: border-box;
-        }
-        button {
-            background-color: #4CAF50;
-            color: white;
-            padding: 10px 15px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            margin: 5px;
-        }
-        button:disabled {
-            background-color: #cccccc;
-            cursor: not-allowed;
-        }
-        button:hover:not(:disabled) {
-            background-color: #45a049;
-        }
-        .message {
-            margin-top: 10px;
-            padding: 10px;
-            border-radius: 4px;
-        }
-        .success {
-            background-color: #dff0d8;
-            color: #3c763d;
-        }
-        .error {
-            background-color: #f2dede;
-            color: #a94442;
-        }
-        .terms-checkbox {
-            margin: 20px 0;
-        }
-        .signature-section {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 50px;
-        }
-        .party-section {
-            width: 45%;
-        }
-    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" integrity="sha512-Kc323vGBEqzTmouAECnVceyQqyqdsSiqLQISBL29aUW4U/M7pSPA/gEUZQqv1cwx4OnYxTxve5UMg5GT6L4JJg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+    <script src="script.js"></script>
+    <script src="notification.js"></script>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="noti.css">
+
 </head>
 <body>
+    <div>
+        <div id="toast">
+            
+        </div>
+    </div>
     <div class="container">
         <div class="contract-header">
             <h2>CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</h2>
@@ -99,8 +32,8 @@
         
         <div class="contract-title">
             <h2>HỢP ĐỒNG CHO THUÊ XE</h2>
-            <p>Ngày 1 tháng 5 năm 2025</p>
-            <p>Số: …………………………</p>
+            <p>Ngày: <span id="currentDate"></span></p>
+            <p>Số HĐ: <span id="numberContract"></span></p>
         </div>
 
         <h3>BÊN A</h3>
@@ -132,8 +65,8 @@
 
 
         <div class="terms-checkbox">
-            <input type="checkbox" id="terms" onchange="toggleVerificationButton()">
             <label for="terms">Đồng ý với điều khoản</label>
+            <input type="checkbox" id="terms" onchange="toggleVerificationButton()">
         </div>
 
         <button id="getCodeBtn" onclick="sendVerificationCode()" disabled>Gửi mã xác nhận</button>
@@ -162,154 +95,69 @@
     </div>
 
     <script>
-        function toggleVerificationButton() {
-            const termsCheckbox = document.getElementById('terms');
-            const getCodeBtn = document.getElementById('getCodeBtn');
-            getCodeBtn.disabled = !termsCheckbox.checked;
-        }
+        // toast function
+        function toast({
+            title='',message='',type='success',duration=3000
+        }){
+            const main=document.getElementById('toast')
+            if(main){
+                const toast=document.createElement('div');
 
-        async function sendVerificationCode() {
-            const email = document.getElementById('email').value;
-            const messageDiv = document.getElementById('message');
-            
-            if (!email) {
-                messageDiv.className = 'message error';
-                messageDiv.textContent = 'Vui lòng nhập email';
-                return;
-            }
-            
-            try {
-                const response = await fetch('http://localhost:5137/send-code', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ email })
-                });
-                
-                const data = await response.json();
-                
-                messageDiv.className = 'message ' + (data.success ? 'success' : 'error');
-                messageDiv.textContent = data.message;
-            } catch (error) {
-                messageDiv.className = 'message error';
-                messageDiv.textContent = 'Đã xảy ra lỗi. Vui lòng thử lại.';
-            }
-        }
-
-        async function generateAndSendPDF() {
-            const name = document.getElementById('name').value;
-            const phone = document.getElementById('phone').value;
-            const cccd = document.getElementById('cccd').value;
-            const email = document.getElementById('email').value;
-
-            const docDefinition = {
-                content: [
-                    { text: 'CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM', style: 'header', alignment: 'center' },
-                    { text: 'Độc lập – Tự do – Hạnh phúc', style: 'subheader', alignment: 'center' },
-                    { text: '-------------------------------', alignment: 'center', margin: [0, 0, 0, 10] },
-                    { text: 'HỢP ĐỒNG CHO THUÊ XE', style: 'title', alignment: 'center', margin: [0, 10, 0, 0] },
-                    { text: 'Ngày 1 tháng 5 năm 2025', alignment: 'center' },
-                    { text: 'Số: …………………………', alignment: 'center', margin: [0, 0, 0, 20] },
-
-                    { text: 'BÊN A', style: 'section' },
-                    { text: `Tên: ${name}` },
-                    { text: `Số điện thoại: ${phone}` },
-                    { text: `CCCD: ${cccd}` },
-                    { text: `Mail: ${email}`, margin: [0, 0, 0, 10] },
-
-                    { text: 'BÊN B', style: 'section' },
-                    { text: 'Tên: Cty TNHH Group2' },
-                    { text: 'Số điện thoại: 0394672210' },
-                    { text: 'Mail: Binhvuong221004@gmail.com', margin: [0, 0, 0, 20] },
-                    { text: 'Bên B đã đồng ý sử dụng dịch vụ abcxyz của bên A....', margin: [0, 0, 0, 20] },
-
-
-                    {
-                        columns: [
-                            [
-                                { text: 'BÊN A:', style: 'section' },
-                                { text: `Tên: ${name}` },
-                                { text: 'Đã kí online "verify code"', italics: true }
-                            ],
-                            [
-                                { text: 'BÊN B:', style: 'section' },
-                                { text: 'Tên: Group2' },
-                                { text: 'Đã ký!' }
-                            ]
-                        ]
+                //auto remove
+                const autoRemove =setTimeout(function(){
+                    main.removeChild(toast);
+                }, duration + 1);
+                //click remove
+                toast.onclick = function(e){
+                    if(e.target.closest('.toast__close')){
+                        main.removeChild(toast);
+                        clearTimeout(autoRemove);
                     }
-                ],
-                styles: {
-                    header: { fontSize: 14, bold: true },
-                    subheader: { fontSize: 12, italics: true },
-                    title: { fontSize: 16, bold: true },
-                    section: { fontSize: 13, bold: true, margin: [0, 10, 0, 5] }
-                },
-                defaultStyle: {
-                    font: 'Roboto'
                 }
-            };
 
-            // Tạo PDF và gửi về server
-            pdfMake.createPdf(docDefinition).getBlob(async function(blob) {
-                const formData = new FormData();
-                formData.append('pdf', blob, 'hopdong.pdf');
-                formData.append('email', email);
-
-                try {
-                    const response = await fetch('http://localhost:5137/send-pdf', {
-                        method: 'POST',
-                        body: formData
-                    });
-                    const data = await response.json();
-                    const messageDiv = document.getElementById('message');
-                    messageDiv.className = 'message ' + (data.success ? 'success' : 'error');
-                    messageDiv.textContent = data.message;
-                } catch (error) {
-                    const messageDiv = document.getElementById('message');
-                    messageDiv.className = 'message error';
-                    messageDiv.textContent = 'Đã xảy ra lỗi khi gửi PDF. Vui lòng thử lại.';
-                }
-            });
-        }
-
-        async function verifyCode() {
-            const email = document.getElementById('email').value;
-            const code = document.getElementById('code').value;
-            const messageDiv = document.getElementById('message');
-            const name = document.getElementById('name').value;
-            
-            if (!email || !code) {
-                messageDiv.className = 'message error';
-                messageDiv.textContent = 'Vui lòng nhập đầy đủ email và mã xác nhận';
-                return;
+                const icons={
+                    success:'fas fa-circle-check',
+                    info:'fas fa-info-circle',
+                    error:'fas fa-circle-exclamation',
+                    warning:'fas fa-triangle-exclamation'
+                };
+                const icon=icons[type];
+                const delay=(duration/1000).toFixed(2);
+                toast.classList.add('toast',`toast--${type}`);
+                toast.style.animation=`slideInLeft ease .3s, fadeOut linear 1s ${delay}s forwards`;
+                toast.innerHTML = `
+                    <div class="toast__icon">
+                        <i class="${icon}"></i>
+                    </div>
+                    <div class="toast__body">
+                        <h3 class="toast__title">${title}</h3>
+                        <p class="toast__msg"> "${message}"</p>
+                    </div>
+                    <div class="toast__close">
+                        <i class="fa-solid fa-x"></i>
+                    </div>
+                `;
+                main.appendChild(toast)
+                
             }
-            
-            try {
-                const response = await fetch('http://localhost:5137/verify-code', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ email, code })
+        }
+       
+            function showErrorToast(){
+                toast({
+                title: 'Error',
+                message: 'Dang ki khong thanh cong',
+                type: 'error',
+                duration: 5000
                 });
-                
-                const data = await response.json();
-                
-                messageDiv.className = 'message ' + (data.success ? 'success' : 'error');
-                messageDiv.textContent = data.message;
-
-                if (data.success) {
-                    document.getElementById('signedName').textContent = name;
-                    document.getElementById('verificationStatus').textContent = 'Đã xác nhận';
-                    await generateAndSendPDF();
-                }
-            } catch (error) {
-                messageDiv.className = 'message error';
-                messageDiv.textContent = 'Đã xảy ra lỗi. Vui lòng thử lại.';
             }
-        }
+            function showSuccessToast(){
+                toast({
+                title: 'Success',
+                message: 'Cam on ban da dang ky kenh',
+                type: 'success',
+                duration: 5000
+                });
+            }
     </script>
 </body>
 </html> 
